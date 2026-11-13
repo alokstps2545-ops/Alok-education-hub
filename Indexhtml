@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alok Education Hub</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1120;
+      --panel: #111b2e;
+      --panel-light: #17243a;
+      --border: #25334b;
+      --text: #e7eefb;
+      --muted: #91a2bc;
+      --blue: #60a5fa;
+      --blue-dark: #2563eb;
+      --green: #34d399;
+      --purple: #a78bfa;
+      --orange: #fbbf24;
+      --red: #fb7185;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, sans-serif;
+    }
+
+    button, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      min-height: 100vh;
+      padding: 24px 16px;
+      background: #0e1728;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 8px 30px;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      font-size: 22px;
+    }
+
+    .brand strong { display: block; font-size: 15px; }
+    .brand small { display: block; color: var(--muted); margin-top: 4px; }
+
+    .nav-label {
+      padding: 0 10px;
+      margin: 8px 0 10px;
+      color: #71819a;
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+
+    .nav-button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      margin: 3px 0;
+      border: 0;
+      border-radius: 10px;
+      color: var(--muted);
+      background: transparent;
+      text-align: left;
+      transition: 0.2s ease;
+    }
+
+    .nav-button:hover,
+    .nav-button.active {
+      background: #1a2a43;
+      color: #fff;
+    }
+
+    .nav-button.active { box-shadow: inset 3px 0 var(--blue); }
+    .nav-icon { width: 22px; text-align: center; }
+
+    .sidebar-note {
+      margin-top: auto;
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: linear-gradient(145deg, #172b49, #142036);
+    }
+
+    .sidebar-note strong { display: block; margin-bottom: 6px; }
+    .sidebar-note p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+    .main {
+      min-width: 0;
+      padding: 24px clamp(16px, 3vw, 36px);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 28px;
+    }
+
+    .topbar h1 { margin: 0; font-size: 23px; }
+    .topbar p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 12px 7px 7px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #253a5b;
+    }
+
+    .profile span { font-size: 13px; font-weight: bold; }
+
+    section[hidden] { display: none !important; }
+
+    .welcome {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      padding: clamp(20px, 4vw, 32px);
+      margin-bottom: 20px;
+      overflow: hidden;
+      border: 1px solid #2c4c78;
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 90% 15%, #315c9b 0, transparent 30%),
+        linear-gradient(120deg, #17345b, #172442 70%);
+    }
+
+    .welcome h2 { margin: 0 0 9px; font-size: clamp(21px, 3vw, 29px); }
+    .welcome p { max-width: 570px; margin: 0; color: #c1d0e7; line-height: 1.6; }
+
+    .primary {
+      flex-shrink: 0;
+      padding: 12px 17px;
+      border: 0;
+      border-radius: 10px;
+      color: white;
+      background: var(--blue-dark);
+      font-weight: bold;
+      transition: 0.2s ease;
+    }
+
+    .primary:hover { background: #3b82f6; transform: translateY(-1px); }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .card, .stat-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+    }
+
+    .stat-card { padding: 17px; }
+    .stat-top { display: flex; justify-content: space-between; gap: 10px; }
+    .stat-label { color: var(--muted); font-size: 13px; }
+    .stat-value { margin-top: 12px; font-size: 25px; font-weight: bold; }
+    .stat-foot { margin-top: 8px; color: var(--muted); font-size: 12px; }
+    .stat-icon {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      background: #1b2c47;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(240px, 0.9fr);
+      gap: 16px;
+    }
+
+    .card { padding: 19px; }
+    .card-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 17px;
+    }
+
+    .card-heading h3 { margin: 0; font-size: 16px; }
+    .subtle { color: var(--muted); font-size: 12px; }
+
+    .subject-row { margin: 17px 0; }
+    .subject-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .subject-info span:last-child { color: var(--muted); }
+
+    .progress-track {
+      height: 8px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: #26344a;
+    }
+
+    .progress-fill { height: 100%; border-radius: inherit; background: var(--blue); }
+    .fill-green { background: var(--green); }
+    .fill-purple { background: var(--purple); }
+    .fill-orange { background: var(--orange); }
+
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .activity-item:last-child { border-bottom: 0; }
+    .activity-icon {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: #1b2c47;
+    }
+
+    .activity-item strong { display: block; font-size: 13px; }
+    .activity-item small { display: block; margin-top: 4px; color: var(--muted); }
+
+    .subject-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .subject-card {
+      padding: 19px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+    }
+
+    .subject-card .subject-emoji { font-size: 24px; }
+    .subject-card h3 { margin: 13px 0 6px; font-size: 15px; }
+    .subject-card p { margin: 0; color: var(--muted); font-size: 13px; }
+
+    .test-settings { max-width: 650px; }
+    .test-settings label { display: block; margin: 18px 0 8px; font-size: 14px; }
+    select {
+      width: 100%;
+      padding: 12px;
+      color: var(--text);
+      background: #0d1728;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+    }
+
+    .quiz-card { margin-top: 18px; }
+    .quiz-meta { color: var(--muted); font-size: 13px; }
+    .quiz-question { margin: 12px 0 18px; font-size: 20px; line-height: 1.5; }
+
+    .option {
+      width: 100%;
+      padding: 13px;
+      margin: 7px 0;
+      color: var(--text);
+      background: #17243a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      text-align: left;
+    }
+
+    .option:hover { border-color: var(--blue); background: #1b2d49; }
+    .feedback { margin-top: 13px; line-height: 1.6; }
+    .success { color: var(--green); }
+    .error { color: var(--red); }
+    .footer { margin-top: 28px; color: #71819a; text-align: center; font-size: 12px; }
+
+    @media (max-width: 900px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .subject-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 680px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar {
+        min-height: auto;
+        padding: 12px;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .brand { padding: 4px 5px 12px; }
+      .nav-label, .sidebar-note { display: none; }
+      .nav-list { display: flex; gap: 5px; }
+      .nav-button { justify-content: center; padding: 10px 8px; font-size: 12px; }
+      .nav-icon { width: auto; }
+      .main { padding-top: 18px; }
+      .topbar { margin-bottom: 18px; }
+      .topbar h1 { font-size: 19px; }
+      .profile span { display: none; }
+      .welcome { align-items: flex-start; flex-direction: column; }
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 420px) {
+      .stats { gap: 9px; }
+      .stat-card { padding: 13px; }
+      .stat-value { font-size: 21px; }
+      .subject-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">🎓</div>
+        <div>
+          <strong>Alok Education Hub</strong>
+          <small>Student Dashboard</small>
+        </div>
+      </div>
+
+      <div class="nav-label">Menu</div>
+      <nav class="nav-list" aria-label="Main navigation">
+        <button class="nav-button active" data-page="home" onclick="showPage('home', this)">
+          <span class="nav-icon">⌂</span> Dashboard
+        </button>
+        <button class="nav-button" data-page="subjects" onclick="showPage('subjects', this)">
+          <span class="nav-icon">▦</span> Subjects
+        </button>
+        <button class="nav-button" data-page="test" onclick="showPage('test', this)">
+          <span class="nav-icon">✓</span> MCQ Test
+        </button>
+      </nav>
+
+      <div class="sidebar-note">
+        <strong>📅 UPCATET 2027</strong>
+        <p>अपनी तैयारी जारी रखें। रोज़ थोड़ा अभ्यास भी बड़ा फर्क लाता है।</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <h1 id="pageTitle">Dashboard</h1>
+          <p>Welcome back! आज की पढ़ाई शुरू करें।</p>
+        </div>
+        <div class="profile">
+          <div class="avatar">👨‍🎓</div>
+          <span>Student</span>
+        </div>
+      </div>
+
+      <section id="home">
+        <div class="welcome">
+          <div>
+            <h2>नमस्ते, विद्यार्थी! 👋</h2>
+            <p>UPCATET 2027 की तैयारी के लिए अपने विषयों को दोहराएँ और रोज़ MCQ अभ्यास करें।</p>
+          </div>
+          <button class="primary" onclick="openPage('test')">टेस्ट शुरू करें →</button>
+        </div>
+
+        <div class="stats">
+          <div class="stat-card">
+            <div class="stat-top"><span class="stat-label">कुल विषय</span><span class="stat-icon">📚</span></div>
+            <div class="stat-value">6</div>
+            <div class="stat-foot">आपके पाठ्यक्रम में</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top"><span class="stat-label">आज का अभ्यास</span><span class="stat-icon">✍️</span></div>
+            <div class="stat-value" id="attemptCount">0</div>
+            <div class="stat-foot">इस सत्र में पूरे किए प्रश्न</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top"><span class="stat-label">सही उत्तर</span><span class="stat-icon">🎯</span></div>
+            <div class="stat-value" id="correctCount">0</div>
+            <div class="stat-foot">इस सत्र में</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top"><span class="stat-label">लक्ष्य</span><span class="stat-icon">🏆</span></div>
+            <div class="stat-value">2027</div>
+            <div class="stat-foot">UPCATET Entrance</div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-heading">
+              <h3>विषयवार तैयारी</h3>
+              <span class="subtle">आपकी अध्ययन योजना</span>
+            </div>
+
+            <div class="subject-row">
+              <div class="subject-info"><span>Agronomy</span><span>75%</span></div>
+              <div class="progress-track"><div class="progress-fill" style="width:75%"></div></div>
+            </div>
+            <div class="subject-row">
+              <div class="subject-info"><span>Dairy Science</span><span>55%</span></div>
+              <div class="progress-track"><div class="progress-fill fill-green" style="width:55%"></div></div>
+            </div>
+            <div class="subject-row">
+              <div class="subject-info"><span>Agricultural Economics</span><span>40%</span></div>
+              <div class="progress-track"><div class="progress-fill fill-purple" style="width:40%"></div></div>
+            </div>
+            <div class="subject-row">
+              <div class="subject-info"><span>Chemistry</span><span>30%</span></div>
+              <div class="progress-track"><div class="progress-fill fill-orange" style="width:30%"></div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-heading">
+              <h3>जल्दी शुरू करें</h3>
+              <span class="subtle">Study shortcuts</span>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon">🌾</div>
+              <div><strong>Agronomy</strong><small>फसल विज्ञान का अभ्यास करें</small></div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon">🥛</div>
+              <div><strong>Dairy Science</strong><small>दुग्ध विज्ञान दोहराएँ</small></div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon">📝</div>
+              <div><strong>MCQ Practice</strong><small>अपना टेस्ट शुरू करें</small></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="subjects" hidden>
+        <div class="card-heading">
+          <h3>आपके पढ़ाई के विषय</h3>
+          <span class="subtle">Class 12 · Agriculture</span>
+        </div>
+        <div class="subject-grid">
+          <article class="subject-card"><span class="subject-emoji">🌾</span><h3>Agronomy</h3><p>फसल और कृषि विज्ञान</p></article>
+          <article class="subject-card"><span class="subject-emoji">🥛</span><h3>Dairy Science</h3><p>दुग्ध उत्पादन और पशुपालन</p></article>
+          <article class="subject-card"><span class="subject-emoji">📈</span><h3>Agricultural Economics</h3><p>कृषि अर्थशास्त्र के आधार</p></article>
+          <article class="subject-card"><span class="subject-emoji">🔤</span><h3>Hindi</h3><p>हिंदी भाषा अभ्यास</p></article>
+          <article class="subject-card"><span class="subject-emoji">🧬</span><h3>Zoology</h3><p>जीव विज्ञान और कोशिका</p></article>
+          <article class="subject-card"><span class="subject-emoji">⚗️</span><h3>Chemistry</h3><p>रसायन विज्ञान के प्रश्न</p></article>
+        </div>
+      </section>
+
+      <section id="test" hidden>
+        <div class="card test-settings">
+          <h3 style="margin-top:0">MCQ Practice Test</h3>
+          <p class="subtle">प्रश्नों की संख्या चुनें और अभ्यास शुरू करें।</p>
+          <label for="count">प्रश्नों की संख्या</label>
+          <select id="count">
+            <option value="10">10 Questions</option>
+            <option value="30">30 Questions</option>
+            <option value="50">50 Questions</option>
+            <option value="100">100 Questions</option>
+          </select>
+          <button class="primary" style="margin-top:15px" onclick="startTest()">Start Test</button>
+        </div>
+
+        <div id="quiz" class="card quiz-card" hidden></div>
+      </section>
+
+      <div class="footer">© 2026 Alok Education Hub · UPCATET Preparation</div>
+    </main>
+  </div>
+
+  <script>
+    const questions = [
+      { q: "भारत में हरित क्रांति का मुख्य संबंध किससे है?", o: ["दूध उत्पादन", "खाद्यान्न उत्पादन", "मछली उत्पादन", "वन उत्पादन"], a: 1, s: "Agronomy" },
+      { q: "गेहूँ किस मौसम की फसल है?", o: ["खरीफ", "रबी", "जायद", "बारहमासी"], a: 1, s: "Agronomy" },
+      { q: "श्वेत क्रांति का संबंध किससे है?", o: ["दूध", "गेहूँ", "मछली", "कपास"], a: 0, s: "Dairy Science" },
+      { q: "साहीवाल गाय का मूल स्थान कौन सा है?", o: ["पंजाब क्षेत्र", "केरल", "गुजरात", "महाराष्ट्र"], a: 0, s: "Dairy Science" },
+      { q: "मांग का नियम किससे संबंधित है?", o: ["कीमत और मांग", "वर्षा", "मिट्टी", "तापमान"], a: 0, s: "Economics" },
+      { q: "संज्ञा किसे कहते हैं?", o: ["नाम बताने वाला शब्द", "काम बताने वाला शब्द", "गुण बताने वाला शब्द", "इनमें से कोई नहीं"], a: 0, s: "Hindi" },
+      { q: "कोशिका का पावर हाउस किसे कहते हैं?", o: ["न्यूक्लियस", "माइटोकॉन्ड्रिया", "राइबोसोम", "गॉल्जी बॉडी"], a: 1, s: "Zoology" },
+      { q: "जल का रासायनिक सूत्र क्या है?", o: ["CO2", "H2O", "O2", "NaCl"], a: 1, s: "Chemistry" },
+      { q: "प्रकाश संश्लेषण में कौन सी गैस उपयोग होती है?", o: ["ऑक्सीजन", "नाइट्रोजन", "कार्बन डाइऑक्साइड", "हाइड्रोजन"], a: 2, s: "Biology" },
+      { q: "भारत में खरीफ फसलें सामान्यतः कब बोई जाती हैं?", o: ["मानसून के आरंभ में", "सर्दियों में", "गर्मी के अंत में", "पूरे साल"], a: 0, s: "Agronomy" }
+    ];
+
+    let testQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+    let answered = false;
+    let attempts = 0;
+    let correctAnswers = 0;
+
+    function showPage(page, button) {
+      ["home", "subjects", "test"].forEach(id => {
+        document.getElementById(id).hidden = id !== page;
+      });
+
+      document.querySelectorAll(".nav-button").forEach(item => item.classList.remove("active"));
+      const activeButton = button || document.querySelector(`[data-page="${page}"]`);
+      if (activeButton) activeButton.classList.add("active");
+
+      const titles = { home: "Dashboard", subjects: "Subjects", test: "MCQ Test" };
+      document.getElementById("pageTitle").textContent = titles[page];
+    }
+
+    function openPage(page) {
+      showPage(page);
+    }
+
+    function startTest() {
+      const count = Number(document.getElementById("count").value);
+      testQuestions = Array.from({ length: count }, (_, i) => questions[i % questions.length]);
+      currentIndex = 0;
+      score = 0;
+      document.getElementById("quiz").hidden = false;
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      answered = false;
+      const item = testQuestions[currentIndex];
+      const quiz = document.getElementById("quiz");
+
+      quiz.innerHTML = `
+        <div class="quiz-meta">प्रश्न ${currentIndex + 1} / ${testQuestions.length} · ${item.s}</div>
+        <h3 class="quiz-question">${item.q}</h3>
+        <div>
+          ${item.o.map((option, index) => `
+            <button class="option" onclick="answerQuestion(${index})">${"ABCD"[index]}. ${option}</button>
+          `).join("")}
+        </div>
+        <div id="feedback" class="feedback" aria-live="polite"></div>
+      `;
+    }
+
+    function answerQuestion(choice) {
+      if (answered) return;
+      answered = true;
+      attempts++;
+
+      const item = testQuestions[currentIndex];
+      const feedback = document.getElementById("feedback");
+
+      if (choice === item.a) {
+        score += 4;
+        correctAnswers++;
+        feedback.className = "feedback success";
+        feedback.textContent = "✅ सही जवाब! +4";
+      } else {
+        score -= 1;
+        feedback.className = "feedback error";
+        feedback.textContent = `❌ गलत जवाब। सही उत्तर: ${item.o[item.a]} (-1)`;
+      }
+
+      document.getElementById("attemptCount").textContent = attempts;
+      document.getElementById("correctCount").textContent = correctAnswers;
+
+      const nextButton = document.createElement("button");
+      nextButton.className = "primary";
+      nextButton.style.marginTop = "12px";
+      nextButton.textContent = currentIndex + 1 < testQuestions.length ? "अगला प्रश्न →" : "परिणाम देखें";
+      nextButton.onclick = nextQuestion;
+      feedback.appendChild(document.createElement("br"));
+      feedback.appendChild(nextButton);
+    }
+
+    function nextQuestion() {
+      currentIndex++;
+      if (currentIndex < testQuestions.length) {
+        renderQuestion();
+        return;
+      }
+
+      const quiz = document.getElementById("quiz");
+      quiz.innerHTML = `
+        <h3>टेस्ट पूरा! 🎉</h3>
+        <p>आपका स्कोर: <strong>${score}</strong> / <strong>${testQuestions.length * 4}</strong></p>
+        <p class="subtle">सही उत्तर: ${correctAnswers} · हल किए गए प्रश्न: ${attempts}</p>
+        <button class="primary" onclick="startTest()">फिर से टेस्ट करें</button>
+      `;
+    }
+  </script>
+</body>
+</html>
