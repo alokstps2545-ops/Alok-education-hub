@@ -1,0 +1,252 @@
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D Bike Racing Game</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#07111e;color:white;font-family:Arial;text-align:center}
+h2{margin:12px}
+#info{display:flex;justify-content:space-around;padding:10px;background:#14253b}
+canvas{width:100%;max-width:650px;height:65vh;display:block;margin:auto;background:#182d22}
+button{padding:13px 17px;margin:5px;border:0;border-radius:10px;background:#1687ff;color:white;font-weight:bold}
+#menu{padding:10px}
+#controls{display:flex;justify-content:space-around}
+#shop{display:none;background:#14253b;padding:12px}
+</style>
+</head>
+<body>
+
+<h2>🏍️ 3D BIKE RACING</h2>
+
+<div id="info">
+<span>🪙 Coins: <b id="coins">0</b></span>
+<span>🏆 Score: <b id="score">0</b></span>
+<span>🚔 <b id="police">OFF</b></span>
+</div>
+
+<div id="menu">
+<button onclick="startGame(false)">START RACE</button>
+<button onclick="startGame(true)">🚔 POLICE MODE</button>
+<button onclick="openShop()">🏪 BIKE SHOP</button>
+</div>
+
+<canvas id="game" width="600" height="700"></canvas>
+
+<div id="controls">
+<button id="left">⬅️ LEFT</button>
+<button id="right">RIGHT ➡️</button>
+<button onclick="jump()">⬆️ JUMP</button>
+</div>
+
+<div id="shop">
+<h3>🏍️ BIKE SHOP</h3>
+<p id="balance"></p>
+<button onclick="buy(0)">Red Bike - FREE</button>
+<button onclick="buy(100)">Blue Bike - 100 🪙</button>
+<button onclick="buy(250)">Super Bike - 250 🪙</button>
+<button onclick="buy(500)">Sport Bike - 500 🪙</button>
+<button onclick="closeShop()">CLOSE</button>
+</div>
+
+<script>
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+
+let coins=0,score=0,running=false;
+let x=300,speed=5,roadOffset=0;
+let obstacles=[],money=[];
+let policeMode=false;
+let jumpTime=0;
+let bikeColor="red";
+let best=0;
+
+function startGame(p){
+ policeMode=p;
+ document.getElementById("police").innerText=p?"ON":"OFF";
+ document.getElementById("shop").style.display="none";
+ obstacles=[];
+ money=[];
+ score=0;
+ x=300;
+ speed=5;
+ running=true;
+ requestAnimationFrame(loop);
+}
+
+function road(){
+ ctx.fillStyle="#286b37";
+ ctx.fillRect(0,0,600,700);
+
+ ctx.fillStyle="#444";
+ ctx.beginPath();
+ ctx.moveTo(210,0);
+ ctx.lineTo(390,0);
+ ctx.lineTo(570,700);
+ ctx.lineTo(30,700);
+ ctx.fill();
+
+ ctx.strokeStyle="white";
+ ctx.lineWidth=5;
+ ctx.setLineDash([35,35]);
+ ctx.lineDashOffset=-roadOffset;
+ ctx.beginPath();
+ ctx.moveTo(300,0);
+ ctx.lineTo(300,700);
+ ctx.stroke();
+ ctx.setLineDash([]);
+
+ ctx.fillStyle="#ffdd55";
+ ctx.fillRect(205,0,5,700);
+ ctx.fillRect(390,0,5,700);
+}
+
+function drawBike(){
+ let y=jumpTime>0?400:530;
+ ctx.save();
+ ctx.translate(x,y);
+
+ ctx.fillStyle="#111";
+ ctx.beginPath();
+ ctx.ellipse(0,15,17,40,0,0,Math.PI*2);
+ ctx.fill();
+
+ ctx.fillStyle=bikeColor;
+ ctx.fillRect(-14,-30,28,55);
+
+ ctx.fillStyle="#ddd";
+ ctx.fillRect(-20,-43,40,6);
+
+ ctx.fillStyle="#222";
+ ctx.fillRect(-8,-55,16,24);
+
+ ctx.fillStyle="#ffe66b";
+ ctx.fillRect(-7,-38,14,8);
+
+ ctx.restore();
+}
+
+function drawCar(o){
+ ctx.fillStyle=o.type==="police"?"#eee":"#e33";
+ ctx.fillRect(o.x-23,o.y-35,46,65);
+ ctx.fillStyle="#111";
+ ctx.fillRect(o.x-28,o.y-25,7,20);
+ ctx.fillRect(o.x+21,o.y-25,7,20);
+ ctx.fillStyle="#8bdcff";
+ ctx.fillRect(o.x-16,o.y-25,32,14);
+ if(o.type==="police"){
+  ctx.fillStyle="blue";
+  ctx.fillRect(o.x-14,o.y-40,12,6);
+  ctx.fillStyle="red";
+  ctx.fillRect(o.x+2,o.y-40,12,6);
+ }
+}
+
+function drawCoin(c){
+ ctx.fillStyle="#ffcf22";
+ ctx.beginPath();
+ ctx.arc(c.x,c.y,12,0,Math.PI*2);
+ ctx.fill();
+ ctx.fillStyle="#9b6500";
+ ctx.font="bold 15px Arial";
+ ctx.fillText("$",c.x-5,c.y+5);
+}
+
+function loop(){
+ if(!running)return;
+
+ road();
+ roadOffset+=speed;
+
+ if(Math.random()<0.025){
+  obstacles.push({
+   x:230+Math.random()*140,
+   y:-50,
+   type:policeMode?"police":"car"
+  });
+ }
+
+ if(Math.random()<0.035){
+  money.push({x:240+Math.random()*120,y:-20});
+ }
+
+ obstacles.forEach(o=>{
+  o.y+=speed;
+  drawCar(o);
+
+  if(Math.abs(o.x-x)<38 && Math.abs(o.y-530)<55 && jumpTime<=0){
+   running=false;
+   alert("GAME OVER! Score: "+score);
+  }
+ });
+
+ money.forEach(c=>{
+  c.y+=speed;
+  drawCoin(c);
+  if(Math.abs(c.x-x)<30 && Math.abs(c.y-530)<40){
+   c.y=900;
+   coins+=1;
+   document.getElementById("coins").innerText=coins;
+  }
+ });
+
+ obstacles=obstacles.filter(o=>o.y<750);
+ money=money.filter(c=>c.y<750);
+
+ if(jumpTime>0)jumpTime--;
+
+ drawBike();
+
+ if(policeMode){
+  ctx.fillStyle="red";
+  ctx.font="bold 22px Arial";
+  ctx.fillText("🚔 POLICE CHASE!",180,40);
+ }
+
+ score++;
+ document.getElementById("score").innerText=score;
+ speed=Math.min(11,5+score/500);
+
+ requestAnimationFrame(loop);
+}
+
+function left(){x=Math.max(220,x-35)}
+function right(){x=Math.min(380,x+35)}
+function jump(){if(running)jumpTime=35}
+
+document.getElementById("left").addEventListener("pointerdown",left);
+document.getElementById("right").addEventListener("pointerdown",right);
+
+document.addEventListener("keydown",e=>{
+ if(e.key==="ArrowLeft")left();
+ if(e.key==="ArrowRight")right();
+ if(e.key===" "||e.key==="ArrowUp")jump();
+});
+
+function openShop(){
+ running=false;
+ document.getElementById("shop").style.display="block";
+ document.getElementById("balance").innerText="Your Coins: "+coins;
+}
+
+function closeShop(){
+ document.getElementById("shop").style.display="none";
+}
+
+function buy(price){
+ if(price===0){
+  bikeColor="red";
+ }else if(coins>=price){
+  coins-=price;
+  bikeColor=price===100?"blue":price===250?"lime":"orange";
+  document.getElementById("coins").innerText=coins;
+  document.getElementById("balance").innerText="Bike Purchased!";
+ }else{
+  alert("Not enough coins!");
+ }
+}
+</script>
+</body>
+</html>
