@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALOK GAMES GTA 3D WORLD</title>
+<style>
+body{margin:0;overflow:hidden;background:#111;color:white;font-family:Arial}
+#title{position:absolute;top:8px;width:100%;text-align:center;color:gold;font-size:23px;font-weight:bold}
+#hud{position:absolute;top:45px;left:10px;background:#000b;padding:10px;border-radius:10px}
+#controls{position:absolute;bottom:20px;width:100%;display:flex;justify-content:space-around}
+button{padding:15px;border:0;border-radius:12px;background:#ffbd00;font-weight:bold}
+#mission{position:absolute;top:100px;width:100%;text-align:center;color:white}
+</style>
+</head>
+<body>
+<div id="title">👑 ALOK GAMES</div>
+<div id="hud">🪙 Coins: <span id="coins">0</span><br>
+🚔 Police: <span id="police">0</span><br>
+🏍️ Speed: <span id="speed">0</span></div>
+<div id="mission">MISSION: CITY EXPLORER</div>
+<div id="controls">
+<button onclick="left()">⬅️</button>
+<button onclick="accelerate()">RIDE</button>
+<button onclick="right()">➡️</button>
+<button onclick="brake()">BRAKE</button>
+<button onclick="toggleBike()">WALK/BIKE</button>
+</div>
+<script type="module">
+import * as THREE from
+'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x87ceeb);
+scene.fog=new THREE.Fog(0x87ceeb,40,220);
+
+const camera=new THREE.PerspectiveCamera(
+70,innerWidth/innerHeight,.1,1000);
+camera.position.set(0,7,12);
+
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+document.body.appendChild(renderer.domElement);
+
+scene.add(new THREE.HemisphereLight(0xffffff,0x555566,2));
+const sun=new THREE.DirectionalLight(0xffffff,2);
+sun.position.set(20,30,10);scene.add(sun);
+
+const ground=new THREE.Mesh(
+new THREE.PlaneGeometry(500,500),
+new THREE.MeshStandardMaterial({color:0x39834b}));
+ground.rotation.x=-Math.PI/2;scene.add(ground);
+
+const road=new THREE.Mesh(
+new THREE.PlaneGeometry(14,500),
+new THREE.MeshStandardMaterial({color:0x333333}));
+road.rotation.x=-Math.PI/2;
+road.position.y=.03;scene.add(road);
+
+for(let z=-240;z<250;z+=12){
+const line=new THREE.Mesh(
+new THREE.BoxGeometry(.18,.04,5),
+new THREE.MeshStandardMaterial({color:0xffffff}));
+line.position.set(0,.08,z);scene.add(line);
+}
+
+// City buildings
+for(let i=0;i<100;i++){
+let side=i%2===0?-1:1;
+let height=5+Math.random()*22;
+let building=new THREE.Mesh(
+new THREE.BoxGeometry(5,height,6),
+new THREE.MeshStandardMaterial({
+color:new THREE.Color().setHSL(Math.random()*.15+.52,.3,.35)
+}));
+building.position.set(side*(12+Math.random()*18),
+height/2,-250+Math.random()*500);
+scene.add(building);
+}
+
+// Player bike
+const bike=new THREE.Group();
+const body=new THREE.Mesh(
+new THREE.BoxGeometry(1,0.65,2),
+new THREE.MeshStandardMaterial({color:0xe31b23}));
+bike.add(body);
+const wheelMat=new THREE.MeshStandardMaterial({color:0x111111});
+for(let z of [-.8,.8]){
+let wheel=new THREE.Mesh(
+new THREE.TorusGeometry(.35,.12,8,16),wheelMat);
+wheel.rotation.y=Math.PI/2;
+wheel.position.set(0,-.35,z);
+bike.add(wheel);
+}
+bike.position.set(0,.8,0);scene.add(bike);
+
+// Police car
+const police=new THREE.Group();
+const car=new THREE.Mesh(
+new THREE.BoxGeometry(1.8,1,3),
+new THREE.MeshStandardMaterial({color:0xffffff}));
+police.add(car);
+const siren=new THREE.Mesh(
+new THREE.BoxGeometry(.8,.2,.3),
+new THREE.MeshStandardMaterial({color:0xff0000}));
+siren.position.y=.6;police.add(siren);
+police.position.set(0,.6,-35);scene.add(police);
+
+// Coins
+let coins=[];
+for(let i=0;i<25;i++){
+let coin=new THREE.Mesh(
+new THREE.TorusGeometry(.4,.12,8,16),
+new THREE.MeshStandardMaterial({color:0xffd700,metalness:.7}));
+coin.position.set((Math.random()*8)-4,.9,-10-i*9);
+scene.add(coin);coins.push(coin);
+}
+
+let x=0,speed=0,total=0,wanted=0,onBike=true;
+function left(){x=Math.max(-5,x-.8)}
+function right(){x=Math.min(5,x+.8)}
+function accelerate(){speed=Math.min(1.5,speed+.2)}
+function brake(){speed=Math.max(0,speed-.4)}
+function toggleBike(){onBike=!onBike;bike.visible=onBike}
+
+window.left=left;window.right=right;
+window.accelerate=accelerate;window.brake=brake;
+window.toggleBike=toggleBike;
+
+function animate(){
+requestAnimationFrame(animate);
+bike.position.x+=(x-bike.position.x)*.15;
+bike.position.z-=speed*.15;
+if(onBike)bike.rotation.z=(x-bike.position.x)*.08;
+
+coins.forEach(c=>{
+c.rotation.y+=.04;
+if(c.visible&&bike.position.distanceTo(c.position)<1.5){
+c.visible=false;total++;
+document.getElementById("coins").innerText=total;
+}
+});
+
+police.position.z+=.03+speed*.05;
+police.position.x+=(bike.position.x-police.position.x)*.02;
+if(Math.abs(police.position.z-bike.position.z)<3){
+wanted=Math.min(5,wanted+1);
+police.position.z=bike.position.z-35;
+document.getElementById("police").innerText=wanted;
+}
+
+camera.position.x=bike.position.x*.5;
+camera.position.z=bike.position.z+12;
+camera.lookAt(bike.position.x,0,bike.position.z-5);
+document.getElementById("speed").innerText=Math.round(speed*100);
+renderer.render(scene,camera);
+}
+animate();
+
+onresize=()=>{
+camera.aspect=innerWidth/innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(innerWidth,innerHeight);
+};
+</script>
+</body>
+</html>
