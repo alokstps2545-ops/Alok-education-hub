@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ALOK CITY</title>
+<style>
+body{margin:0;background:#101820;color:white;font-family:Arial;text-align:center}
+h1{color:#45caff}
+button{padding:15px;margin:8px;border:0;border-radius:10px;background:#168be0;color:white;font-size:17px}
+#city{height:65vh;background:linear-gradient(#75b9dc 0 45%,#547d42 45%);position:relative;overflow:hidden}
+.building{position:absolute;bottom:0;width:65px;background:#9b9b9b;border:2px solid #444}
+#player{position:absolute;bottom:20px;left:45%;font-size:45px}
+#road{position:absolute;bottom:0;width:100%;height:90px;background:#333}
+#car{position:absolute;bottom:20px;left:65%;font-size:45px}
+#info{padding:8px}
+</style>
+</head>
+<body>
+<h1>🏙️ ALOK CITY</h1>
+<div id="info">💰 पैसे: ₹<span id="money">500</span> | मिशन: शहर घूमो</div>
+<div id="city">
+<div class="building" style="height:180px;left:5%"></div>
+<div class="building" style="height:240px;left:25%;background:#b18b68"></div>
+<div class="building" style="height:150px;left:75%;background:#7b9d9e"></div>
+<div id="road"></div>
+<div id="player">🧍</div>
+<div id="car">🚙</div>
+</div>
+<h3>मोबाइल कंट्रोल</h3>
+<button onclick="move(-20)">⬅️</button>
+<button onclick="move(20)">➡️</button>
+<button onclick="move(0,-20)">⬆️</button>
+<button onclick="move(0,20)">⬇️</button>
+<br>
+<button onclick="earn()">💰 मिशन पूरा करो</button>
+<button onclick="music()">🎵 संगीत ON/OFF</button>
+<p id="message">ALOK CITY में आपका स्वागत है!</p>
+<script>
+let x=45,y=0,money=500,sound=false;
+function move(a,b=0){
+x=Math.max(0,Math.min(90,x+a));
+y=Math.max(-30,Math.min(0,y+b));
+document.getElementById("player").style.left=x+"%";
+document.getElementById("player").style.bottom=(20-y)+"px";
+}
+function earn(){
+money+=100;
+document.getElementById("money").textContent=money;
+document.getElementById("message").textContent="मिशन पूरा! ₹100 मिले।";
+}
+function music(){
+sound=!sound;
+document.getElementById("message").textContent=sound?"संगीत ON":"संगीत OFF";
+}
+</script>
+</body>
+</html>
