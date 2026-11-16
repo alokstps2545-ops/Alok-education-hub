@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alok City Driving</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101820;color:white;font-family:Arial;text-align:center}
+h2{margin:12px}
+canvas{width:100%;max-width:600px;background:#526b45;display:block;margin:auto}
+.controls{display:flex;justify-content:center;gap:12px;margin:14px}
+button{background:#263b55;color:white;border:2px solid #718ba8;
+border-radius:14px;padding:17px 22px;font-size:22px;touch-action:none}
+</style>
+</head>
+<body>
+<h2>🚗 ALOK CITY</h2>
+<p>City Driving Simulator</p>
+<canvas id="game" width="600" height="700"></canvas>
+<div class="controls">
+<button id="left">⬅️</button>
+<button id="up">⬆️</button>
+<button id="down">⬇️</button>
+<button id="right">➡️</button>
+</div>
+<p>Explore the city and drive your car!</p>
+<script>
+const c=document.getElementById("game");
+const ctx=c.getContext("2d");
+let car={x:300,y:350,a:0,s:0};
+let keys={};
+let buildings=[];
+for(let y=0;y<700;y+=180){
+ for(let x=0;x<600;x+=180){
+ buildings.push({x:x+12,y:y+12,w:115,h:105});
+ }
+}
+function button(id,key){
+ let b=document.getElementById(id);
+ b.onpointerdown=e=>{e.preventDefault();keys[key]=true};
+ b.onpointerup=b.onpointerleave=b.onpointercancel=()=>keys[key]=false;
+}
+button("up","up");button("down","down");
+button("left","left");button("right","right");
+onkeydown=e=>keys[e.key]=true;
+onkeyup=e=>keys[e.key]=false;
+function draw(){
+ ctx.clearRect(0,0,600,700);
+ ctx.fillStyle="#547448";ctx.fillRect(0,0,600,700);
+ ctx.fillStyle="#454b50";
+ ctx.fillRect(0,0,600,125);
+ ctx.fillRect(0,285,600,125);
+ ctx.fillRect(0,465,600,125);
+ ctx.fillRect(230,0,140,700);
+ ctx.fillStyle="#f4d35e";
+ for(let y=0;y<700;y+=45){
+ ctx.fillRect(0,y,600,3);
+ ctx.fillRect(295,y,5,25);
+ ctx.fillRect(0,345+y%90,600,3);
+ }
+ buildings.forEach(b=>{
+ ctx.fillStyle="#b7a58a";
+ ctx.fillRect(b.x,b.y,b.w,b.h);
+ ctx.fillStyle="#776b5b";
+ ctx.fillRect(b.x+8,b.y+8,b.w-16,b.h-16);
+ ctx.fillStyle="#8ecae6";
+ for(let x=b.x+18;x<b.x+b.w-10;x+=35){
+ ctx.fillRect(x,b.y+20,15,15);
+ }
+ });
+ if(keys.up)car.s=Math.min(car.s+0.12,4);
+ else if(keys.down)car.s=Math.max(car.s-0.12,-2);
+ else car.s*=0.97;
+ if(keys.left)car.a-=0.045;
+ if(keys.right)car.a+=0.045;
+ car.x+=Math.sin(car.a)*car.s;
+ car.y-=Math.cos(car.a)*car.s;
+ car.x=Math.max(15,Math.min(585,car.x));
+ car.y=Math.max(15,Math.min(685,car.y));
+ ctx.save();
+ ctx.translate(car.x,car.y);
+ ctx.rotate(car.a);
+ ctx.fillStyle="#111";
+ ctx.fillRect(-17,-23,7,13);
+ ctx.fillRect(10,-23,7,13);
+ ctx.fillRect(-17,12,7,13);
+ ctx.fillRect(10,12,7,13);
+ ctx.fillStyle="#e63946";
+ ctx.fillRect(-13,-25,26,52);
+ ctx.fillStyle="#9de0f5";
+ ctx.fillRect(-10,-15,20,12);
+ ctx.fillRect(-10,7,20,10);
+ ctx.restore();
+ ctx.fillStyle="white";
+ ctx.font="18px Arial";
+ ctx.fillText("Speed: "+Math.abs(Math.round(car.s*20)),15,30);
+ requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>
