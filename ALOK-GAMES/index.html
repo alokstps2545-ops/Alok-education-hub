@@ -1,0 +1,195 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALOK CITY</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;overflow:hidden;font-family:Arial;background:#111;color:white}
+canvas{display:block}
+#menu{position:fixed;inset:0;z-index:5;background:linear-gradient(#06152b,#17618a,#061323);display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center}
+h1{font-size:48px;color:#32d8ff;text-shadow:0 0 20px #00aaff}
+button{padding:13px 24px;margin:7px;border:0;border-radius:9px;background:#0789ef;color:white;font-weight:bold;font-size:17px}
+#hud{position:fixed;top:12px;left:12px;z-index:2;text-shadow:1px 2px 4px black;pointer-events:none}
+#controls{display:none;position:fixed;bottom:15px;left:10px;right:10px;z-index:3;justify-content:space-between}
+.pad{display:grid;grid-template-columns:50px 50px 50px;gap:5px}
+.pad button{padding:12px 3px;margin:0;background:#164c79}
+</style>
+</head>
+<body>
+<div id="menu">
+<h1>ALOK GAMES</h1>
+<h2>🌆 ALOK CITY 3D</h2>
+<p>Welcome to the Open World</p>
+<button onclick="start()">START GAME</button>
+<button onclick="alert('ALOK CITY SETTINGS')">SETTINGS</button>
+</div>
+<div id="hud">ALOK CITY<br>Money: $<span id="money">1000</span><br><span id="info">Welcome</span></div>
+<div id="controls">
+<div class="pad">
+<button data-m="forward">▲</button>
+<button data-m="left">◀</button>
+<button data-m="right">▶</button>
+<button data-m="back">▼</button>
+</div>
+<button onclick="jump()">JUMP</button>
+</div>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x83bce0);
+scene.fog=new THREE.Fog(0x83bce0,100,420);
+
+const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.1,1000);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
+document.body.appendChild(renderer.domElement);
+
+scene.add(new THREE.HemisphereLight(0xffffff,0x536044,2));
+const sun=new THREE.DirectionalLight(0xffffff,2);
+sun.position.set(100,150,80);
+scene.add(sun);
+
+function box(x,y,z,w,h,d,color){
+const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color}));
+m.position.set(x,y,z);
+scene.add(m);
+return m;
+}
+
+// GROUND
+box(0,-1,0,600,2,600,0x43854b);
+
+// ROADS
+box(0,.02,0,18,.1,600,0x292e35);
+box(0,.02,0,600,.1,18,0x292e35);
+for(let i=-280;i<300;i+=15){
+box(0,.1,i,.3,.03,7,0xffffff);
+box(i,.1,0,7,.03,.3,0xffffff);
+}
+
+// CITY BUILDINGS
+for(let x=-220;x<=220;x+=40){
+for(let z=-220;z<=220;z+=40){
+if(Math.abs(x)<20||Math.abs(z)<20)continue;
+let h=15+Math.random()*45;
+let colors=[0x60768e,0x8d9ba7,0x45566e,0xb2a18d];
+box(x,h/2,z,20,h,20,colors[Math.floor(Math.random()*4)]);
+for(let y=5;y<h;y+=7){
+box(x+10.1,y,z,0.1,2,2,0x64d5ff);
+box(x,y,z+10.1,2,2,.1,0x64d5ff);
+}
+}
+}
+
+// TREES
+function tree(x,z){
+box(x,2,z,1.5,4,1.5,0x714326);
+box(x,6,z,6,6,6,0x14753c);
+}
+for(let i=0;i<100;i++){
+let x=Math.random()*500-250,z=Math.random()*500-250;
+if(Math.abs(x)<20||Math.abs(z)<20)continue;
+tree(x,z);
+}
+
+// PLAYER
+const player=new THREE.Group();
+const body=box(0,0,0,1.5,2,1,0x087bff);
+body.position.y=1;
+const head=box(0,0,0,.9,.9,.9,0xffc69b);
+head.position.y=2.5;
+player.add(body,head);
+scene.add(player);
+
+// HELIPAD
+box(100,.1,100,35,.2,35,0x333333);
+box(100,.23,100,20,.04,20,0xffffff);
+box(100,.3,100,8,.05,2,0x222222);
+box(100,.3,100,2,.05,8,0x222222);
+
+// HELICOPTER
+const heli=new THREE.Group();
+const cabin=box(0,0,0,7,2.5,3,0x263b4d);
+const tail=box(5,0,0,5,.5,.6,0x263b4d);
+const rotor=box(0,1.6,0,13,.15,.3,0x111111);
+heli.add(cabin,tail,rotor);
+heli.position.set(100,3,100);
+scene.add(heli);
+
+// ARMY BASE
+box(-110,.1,110,65,.2,60,0x43583d);
+box(-110,5,80,60,10,2,0x66794c);
+box(-110,5,140,60,10,2,0x66794c);
+
+// DECORATIVE TANK
+const tank=new THREE.Group();
+const base=box(0,0,0,7,2,5,0x465b32);
+const top=box(0,1.3,0,3,1.5,3,0x526b38);
+const barrel=box(0,1.4,-3,1,1,5,0x293d29);
+tank.add(base,top,barrel);
+tank.position.set(-110,2,110);
+scene.add(tank);
+
+// CONTROLS
+let moving={};
+document.querySelectorAll('[data-m]').forEach(b=>{
+const key=b.dataset.m;
+b.addEventListener('pointerdown',e=>{e.preventDefault();moving[key]=true});
+['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>moving[key]=false));
+});
+let keys={};
+onkeydown=e=>keys[e.key.toLowerCase()]=true;
+onkeyup=e=>keys[e.key.toLowerCase()]=false;
+
+let active=false,vy=0;
+function start(){
+document.getElementById('menu').style.display='none';
+document.getElementById('controls').style.display='flex';
+active=true;
+document.getElementById('info').textContent='Explore the city!';
+}
+window.start=start;
+
+window.jump=()=>{
+if(Math.abs(player.position.y)<.1)vy=.18;
+};
+
+function animate(){
+requestAnimationFrame(animate);
+if(active){
+let speed=.35;
+let f=moving.forward||keys.w||keys.arrowup;
+let b=moving.back||keys.s||keys.arrowdown;
+let l=moving.left||keys.a||keys.arrowleft;
+let r=moving.right||keys.d||keys.arrowright;
+if(f)player.position.z-=speed;
+if(b)player.position.z+=speed;
+if(l)player.position.x-=speed;
+if(r)player.position.x+=speed;
+vy-=.012;
+player.position.y+=vy;
+if(player.position.y<0){player.position.y=0;vy=0;}
+camera.position.lerp(new THREE.Vector3(player.position.x,player.position.y+9,player.position.z+15),.1);
+camera.lookAt(player.position.x,player.position.y+1,player.position.z);
+heli.children[2].rotation.y+=.15;
+}
+renderer.render(scene,camera);
+}
+animate();
+
+onresize=()=>{
+camera.aspect=innerWidth/innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(innerWidth,innerHeight);
+};
+</script>
+</body>
+</html>
